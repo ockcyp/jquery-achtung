@@ -44,3 +44,14 @@ Loading message that turns into a timed success notice:
         icon: 'ui-icon-check',
         message: 'Loading complete!'
     });
+
+Use jQuery to interact with the notifications:
+
+    $.achtung({ timeout: 0, message: 'Notice #1' });
+    $.achtung({ timeout: 0, message: 'Notice #2' }).attr('id', 'notice2');
+    $.achtung({ timeout: 0, message: 'Notice #3' });
+
+    // Close the first notice
+    $('.achtung:first').achtung('close');
+    // Close by ID selector
+    $('#notice2).achtung('close');
