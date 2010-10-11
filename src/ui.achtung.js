@@ -1,20 +1,20 @@
 /**
  * achtung %%VERSION%%
- * 
+ *
  * Growl-like notifications for jQuery
  *
  * Copyright (c) 2009 Josh Varner <josh@voxwerk.com>
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -68,7 +68,7 @@ $.achtung = function(element)
         $el = $('<div />');
         return $el.achtung.apply($el, args);
     }
-    
+
     this.$container = $(element);
 };
 
@@ -99,14 +99,14 @@ $.extend($.achtung.prototype, {
     $container: false,
     closeTimer: false,
     options: {},
-    
+
     _init: function(args)
     {
         var o, self = this;
 
         args = $.isArray(args) ? args : [];
 
-        
+
         args.unshift($.achtung.defaults);
         args.unshift({});
 
@@ -147,7 +147,7 @@ $.extend($.achtung.prototype, {
             this.timeout(o.timeout);
         }
     },
-    
+
     timeout: function(timeout)
     {
         var self = this;
@@ -164,7 +164,7 @@ $.extend($.achtung.prototype, {
      * Change the CSS class associated with this message, using
      * a transition if available (not availble in Safari/Webkit).
      * If no transition is available, the switch is immediate.
-     * 
+     *
      * #LATER Check if this has been corrected in Webkit or jQuery UI
      * #TODO Make transition time configurable
      * @param newClass string Name of new class to associate
@@ -246,7 +246,7 @@ $.extend($.achtung.prototype, {
         (options.timeout && this.timeout(options.timeout));
     },
 
-    close: function() 
+    close: function()
     {
         var o = this.options, $container = this.$container;
 
@@ -259,12 +259,12 @@ $.extend($.achtung.prototype, {
         $container.queue(function() {
             $container.removeData('achtung');
             $container.remove();
-            
+
             if ($.achtung.$overlay && $.achtung.$overlay.is(':empty')) {
                 $.achtung.$overlay.remove();
                 $.achtung.$overlay = false;
             }
-            
+
             $container.dequeue();
         });
     }
