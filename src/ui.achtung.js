@@ -62,14 +62,12 @@ $.fn.achtung = function(options)
 
 $.achtung = function(element)
 {
-    var args = Array.prototype.slice.call(arguments, 0), $el;
-
     if (!element || !element.nodeType) {
-        $el = $('<div />');
-        return $el.achtung.apply($el, args);
+        var el = $('<div>');
+        return el.achtung.apply(el, Array.prototype.slice.call(arguments, 0));
     }
 
-    this.$container = $(element);
+    this.container = $(element);
 };
 
 
@@ -78,17 +76,18 @@ $.achtung = function(element)
  **/
 $.extend($.achtung, {
     version: '%%VERSION%%',
-    $overlay: false,
+    overlay: false,
+    wrapper: false,
     defaults: {
         timeout: 10,
         disableClose: false,
         icon: false,
         className: '',
         animateClassSwitch: false,
-        showEffects: {'opacity':'toggle','height':'toggle'},
-        hideEffects: {'opacity':'toggle','height':'toggle'},
-        showEffectDuration: 500,
-        hideEffectDuration: 700
+        showEffects: {'opacity':'toggle'}, // ,'height':'toggle'},
+        hideEffects: {'opacity':'toggle'}, // ,'height':'toggle'},
+        showEffectDuration: 300,
+        hideEffectDuration: 500
     }
 });
 
@@ -96,7 +95,7 @@ $.extend($.achtung, {
  * Non-static members
  **/
 $.extend($.achtung.prototype, {
-    $container: false,
+    container: false,
     closeTimer: false,
     options: {},
 
@@ -106,46 +105,45 @@ $.extend($.achtung.prototype, {
 
         args = $.isArray(args) ? args : [];
 
-
         args.unshift($.achtung.defaults);
         args.unshift({});
 
         o = this.options = $.extend.apply($, args);
-
-        if (!$.achtung.$overlay) {
-    	    $.achtung.$overlay = $('<div id="achtung-overlay"></div>').appendTo(document.body);
-        }
 
         if (!o.disableClose) {
             $('<span class="achtung-close-button ui-icon ui-icon-close" />')
                 .click(function () {  self.close();  })
                 .hover(function () { $(this).addClass('achtung-close-button-hover'); },
                        function () { $(this).removeClass('achtung-close-button-hover'); })
-                .prependTo(this.$container);
+                .prependTo(this.container);
         }
 
         this.changeIcon(o.icon, true);
 
         if (o.message) {
-            this.$container.append($('<span class="achtung-message">' + o.message + '</span>'));
+            this.container.append($('<span class="achtung-message">' + o.message + '</span>'));
         }
 
-        (o.className && this.$container.addClass(o.className));
-        (o.css && this.$container.css(o.css));
+        (o.className && this.container.addClass(o.className));
+        (o.css && this.container.css(o.css));
 
-        this.$container
+        if (!$.achtung.overlay) {
+    	    $.achtung.overlay = $('<div id="achtung-overlay"></div>');
+            $.achtung.wrapper = $('<div id="achtung-wrapper"></div>').appendTo($.achtung.overlay);
+    	    $.achtung.overlay.appendTo(document.body);
+        }
+
+        this.container
             .addClass('achtung')
-            .appendTo($.achtung.$overlay);
+            .appendTo($.achtung.wrapper);
 
         if (o.showEffects) {
-            this.$container.animate(o.showEffects, o.showEffectDuration);
+            this.container.animate(o.showEffects, o.showEffectDuration);
         } else {
-            this.$container.show();
+            this.container.show();
         }
 
-        if (o.timeout > 0) {
-            this.timeout(o.timeout);
-        }
+        this.timeout(o.timeout);
     },
 
     timeout: function(timeout)
@@ -156,8 +154,12 @@ $.extend($.achtung.prototype, {
             clearTimeout(this.closeTimer);
         }
 
-        this.closeTimer = setTimeout(function() { self.close(); }, timeout * 1000);
-        this.options.timeout = timeout;
+        if (timeout > 0) {
+            this.closeTimer = setTimeout(function() { self.close(); }, timeout * 1000);
+            this.options.timeout = timeout;
+        } else if (timeout < 0) {
+            self.close();
+        }
     },
 
     /**
@@ -177,18 +179,16 @@ $.extend($.achtung.prototype, {
             return;
         }
 
-        this.$container.queue(function() {
-            if (!self.options.animateClassSwitch ||
-                /webkit/.test(navigator.userAgent.toLowerCase()) ||
-                !$.isFunction($.fn.switchClass)) {
-                self.$container.removeClass(self.options.className);
-                self.$container.addClass(newClass);
+        this.container.queue(function() {
+            if (self.options.animateClassSwitch) {
+                self.container.switchClass(self.options.className, newClass, 500);
             } else {
-                self.$container.switchClass(self.options.className, newClass, 500);
+                self.container.removeClass(self.options.className);
+                self.container.addClass(newClass);
             }
 
             self.options.className = newClass;
-            self.$container.dequeue();
+            self.container.dequeue();
         });
     },
 
@@ -201,73 +201,107 @@ $.extend($.achtung.prototype, {
         }
 
         if (force || this.options.icon === false) {
-            this.$container.prepend($('<span class="achtung-message-icon ui-icon ' + newIcon + '" />'));
+            this.container.prepend($('<span class="achtung-message-icon ui-icon ' + newIcon + '" />'));
             this.options.icon = newIcon;
             return;
         } else if (newIcon === false) {
-            this.$container.find('.achtung-message-icon').remove();
+            this.container.find('.achtung-message-icon').remove();
             this.options.icon = false;
             return;
         }
 
-        this.$container.queue(function() {
-            var $span = $('.achtung-message-icon', self.$container);
+        this.container.queue(function() {
+            var span = $('.achtung-message-icon', self.container);
 
             if (!self.options.animateClassSwitch ||
                 /webkit/.test(navigator.userAgent.toLowerCase()) ||
                 !$.isFunction($.fn.switchClass)) {
-                $span.removeClass(self.options.icon);
-                $span.addClass(newIcon);
+                span.removeClass(self.options.icon);
+                span.addClass(newIcon);
             } else {
-                $span.switchClass(self.options.icon, newIcon, 500);
+                span.switchClass(self.options.icon, newIcon, 500);
             }
 
             self.options.icon = newIcon;
-            self.$container.dequeue();
+            self.container.dequeue();
         });
     },
 
 
     changeMessage: function(newMessage)
     {
-        this.$container.queue(function() {
+        this.container.queue(function() {
             $('.achtung-message', $(this)).html(newMessage);
             $(this).dequeue();
         });
     },
 
 
-    update: function(options)
+    update: function()
     {
+        var args = Array.prototype.slice.call(arguments, 0), options = {};
+
+        args.unshift({});
+
+        options = $.extend.apply($, args);
+
         (options.className && this.changeClass(options.className));
-        (options.css && this.$container.css(options.css));
+        (options.css && this.container.css(options.css));
         (typeof(options.icon) !== 'undefined' && this.changeIcon(options.icon));
         (options.message && this.changeMessage(options.message));
-        (options.timeout && this.timeout(options.timeout));
+
+        (typeof(options.timeout) !== 'undefined' && this.timeout(options.timeout));
+    },
+
+    isVisible: function() {
+        return (true === this.container.is(':visible'));
     },
 
     close: function()
     {
-        var o = this.options, $container = this.$container;
+        var o = this.options, container = this.container;
 
         if (o.hideEffects) {
-            this.$container.animate(o.hideEffects, o.hideEffectDuration);
+            this.container.animate(o.hideEffects, o.hideEffectDuration);
         } else {
-            this.$container.hide();
+            this.container.hide();
         }
 
-        $container.queue(function() {
-            $container.removeData('achtung');
-            $container.remove();
+        container.queue(function() {
+            container.removeData('achtung');
+            container.remove();
 
-            if ($.achtung.$overlay && $.achtung.$overlay.is(':empty')) {
-                $.achtung.$overlay.remove();
-                $.achtung.$overlay = false;
+            if ($.achtung.wrapper && $.achtung.wrapper.is(':empty')) {
+                $.achtung.overlay.remove();
+                $.achtung.overlay = false;
+                $.achtung.wrapper = false;
             }
 
-            $container.dequeue();
+            container.dequeue();
         });
     }
 });
+
+vox.achtung = {
+    WAIT: {
+        timeout: 0,
+        icon: 'wait-icon',
+        className: 'achtungWait',
+        disableClose: true
+    },
+    SUCCESS: {
+        timeout: 5,
+        icon: 'ui-icon-check',
+        className: 'achtungSuccess',
+        disableClose: false
+    },
+    FAIL: {
+        timeout: 10,
+        icon: 'ui-icon-alert',
+        className: 'achtungFail',
+        disableClose: false
+    }
+};
+
 
 })(jQuery);
