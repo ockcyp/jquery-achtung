@@ -12,11 +12,7 @@ body {
 	*font-size:small; 
 	/* for IE Quirks Mode */
 	*font:x-small;
-	margin:0;padding:0;
-}
-
-#doc {
-    padding: 10px;
+	margin:0;padding:10px;
 }
 
 /**
@@ -86,4 +82,11 @@ table, td, th {
 #myCustomAchtung img {
     float: left;
     margin-right: 5px;
+}
+
+#buttons {
+    width: 500px;
+}
+#buttons button {
+    margin: .1em .5em;
 }

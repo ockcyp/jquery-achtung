@@ -27,44 +27,44 @@
  * @author Josh Varner <josh@voxwerk.com>
  */
 
-/*globals jQuery,clearTimeout,document,navigator,setTimeout
-*/
-(function($) {
+/*jslint browser:true, white:false, onevar:false, nomen:false, bitwise:false, plusplus:false, immed: false */
+/*globals window, jQuery */
+(function ($) {
+
+var widgetName = 'achtung';
 
 /**
  * This is based on the jQuery UI $.widget code. I would have just made this
  * a $.widget but I didn't want the jQuery UI dependency.
  */
-$.fn.achtung = function(options)
-{
+$.fn.achtung = function (options) {
 	var isMethodCall = (typeof options === 'string'),
-		args = Array.prototype.slice.call(arguments, 0),
-		name = 'achtung';
+		args = Array.prototype.slice.call(arguments, isMethodCall ? 1 : 0);
 
 	// handle initialization and non-getter methods
-	return this.each(function() {
-		var instance = $.data(this, name);
-
+	return this.each(function () {
 		// prevent calls to internal methods
 		if (isMethodCall && options.substring(0, 1) === '_') {
-			return this;
+			return;
 		}
 
-		// constructor
-		(!instance && !isMethodCall &&
-			$.data(this, name, new $.achtung(this))._init(args));
+		var instance = $.data(this, widgetName);
 
-		// method call
-		(instance && isMethodCall && $.isFunction(instance[options]) &&
-			instance[options].apply(instance, args.slice(1)));
+		// constructor
+		if (!instance && !isMethodCall) {
+			$.data(this, widgetName, new $.achtung(this))._init(args);
+		}
+
+		if (!!instance && isMethodCall && $.isFunction(instance[options])) {
+			instance[options].apply(instance, args);
+		}
 	});
 };
 
-$.achtung = function(element)
-{
+$.achtung = function (element) {
     if (!element || !element.nodeType) {
         var el = $('<div>');
-        return el.achtung.apply(el, Array.prototype.slice.call(arguments, 0));
+        return el.achtung.apply(el, arguments);
     }
 
     this.container = $(element);
@@ -82,8 +82,9 @@ $.extend($.achtung, {
         timeout: 10,
         disableClose: false,
         icon: false,
-        className: '',
-        animateClassSwitch: false,
+        className: 'achtung-default',
+        crossFadeMessage: 500, // 0 to disable
+        animateClassSwitch: 0, // 0 to disable (doesn't work with gradient backgrounds)
         showEffects: {'opacity':'toggle'}, // ,'height':'toggle'},
         hideEffects: {'opacity':'toggle'}, // ,'height':'toggle'},
         showEffectDuration: 300,
@@ -96,46 +97,54 @@ $.extend($.achtung, {
  **/
 $.extend($.achtung.prototype, {
     container: false,
+    icon: false,
+    message: false,
     closeTimer: false,
     options: {},
 
-    _init: function(args)
-    {
+    _init: function (args) {
         var o, self = this;
 
-        args = $.isArray(args) ? args : [];
+        o = this.options = $.extend.apply($, [{}, $.achtung.defaults].concat(args));
 
-        args.unshift($.achtung.defaults);
-        args.unshift({});
-
-        o = this.options = $.extend.apply($, args);
+        if ((o.animateClassSwitch > 0) && !('switchClass' in $.fn)) {
+            o.animateClassSwitch = this.options.animateClassSwitch = 0;
+        }
 
         if (!o.disableClose) {
             $('<span class="achtung-close-button ui-icon ui-icon-close" />')
-                .click(function () {  self.close();  })
-                .hover(function () { $(this).addClass('achtung-close-button-hover'); },
-                       function () { $(this).removeClass('achtung-close-button-hover'); })
-                .prependTo(this.container);
+                .prependTo(this.container)
+                .bind({
+                    click: function () { self.close(); },
+                    mouseenter: function () { $(this).addClass('achtung-close-button-hover'); },
+                    mouseleave: function () { $(this).removeClass('achtung-close-button-hvoer'); }
+                });
         }
 
         this.changeIcon(o.icon, true);
 
         if (o.message) {
-            this.container.append($('<span class="achtung-message">' + o.message + '</span>'));
+            this.message = $('<span>', {
+                'class': 'achtung-message',
+                html: o.message
+            }).appendTo(this.container);
         }
 
-        (o.className && this.container.addClass(o.className));
-        (o.css && this.container.css(o.css));
+        if ('className' in o) {
+            this.container.addClass(o.className);
+        }
+
+        if ('css' in o) {
+            this.container.css(o.css);
+        }
 
         if (!$.achtung.overlay) {
-    	    $.achtung.overlay = $('<div id="achtung-overlay"></div>');
-            $.achtung.wrapper = $('<div id="achtung-wrapper"></div>').appendTo($.achtung.overlay);
-    	    $.achtung.overlay.appendTo(document.body);
+            $.achtung.overlay = $('<div id="achtung-overlay"><div id="achtung-wrapper"></div></div>');
+            $.achtung.overlay.appendTo(document.body);
+            $.achtung.wrapper = $('#achtung-wrapper');
         }
 
-        this.container
-            .addClass('achtung')
-            .appendTo($.achtung.wrapper);
+        this.container.addClass('achtung').hide().appendTo($.achtung.wrapper);
 
         if (o.showEffects) {
             this.container.animate(o.showEffects, o.showEffectDuration);
@@ -146,8 +155,7 @@ $.extend($.achtung.prototype, {
         this.timeout(o.timeout);
     },
 
-    timeout: function(timeout)
-    {
+    timeout: function (timeout) {
         var self = this;
 
         if (this.closeTimer) {
@@ -155,153 +163,116 @@ $.extend($.achtung.prototype, {
         }
 
         if (timeout > 0) {
-            this.closeTimer = setTimeout(function() { self.close(); }, timeout * 1000);
+            this.closeTimer = setTimeout(function () { self.close(); }, timeout * 1000);
             this.options.timeout = timeout;
         } else if (timeout < 0) {
-            self.close();
+            this.close();
         }
     },
 
     /**
-     * Change the CSS class associated with this message, using
-     * a transition if available (not availble in Safari/Webkit).
-     * If no transition is available, the switch is immediate.
+     * Change the CSS class associated with this message.
      *
-     * #LATER Check if this has been corrected in Webkit or jQuery UI
-     * #TODO Make transition time configurable
      * @param newClass string Name of new class to associate
      */
-    changeClass: function(newClass)
-    {
-        var self = this;
+    changeClass: function (newClass) {
+        var oldClass = '' + this.options.className,
+            self = this;
 
-        if (this.options.className === newClass) {
+        if (oldClass === newClass) {
             return;
         }
 
-        this.container.queue(function() {
-            if (self.options.animateClassSwitch) {
-                self.container.switchClass(self.options.className, newClass, 500);
+        this.container.queue(function (next) {
+            if (self.options.animateClassSwitch > 0) {
+                $(this).switchClass(oldClass, newClass, self.options.animateClassSwitch);
             } else {
-                self.container.removeClass(self.options.className);
-                self.container.addClass(newClass);
+                $(this).removeClass(oldClass).addClass(newClass);
             }
-
-            self.options.className = newClass;
-            self.container.dequeue();
+            next();
         });
+
+        this.options.className = newClass;
     },
 
-    changeIcon: function(newIcon, force)
-    {
-        var self = this;
-
-        if ((force !== true || newIcon === false) && this.options.icon === newIcon) {
+    changeIcon: function (newIcon, force) {
+        if (!force && this.options.icon === newIcon) {
             return;
         }
 
-        if (force || this.options.icon === false) {
-            this.container.prepend($('<span class="achtung-message-icon ui-icon ' + newIcon + '" />'));
-            this.options.icon = newIcon;
-            return;
-        } else if (newIcon === false) {
-            this.container.find('.achtung-message-icon').remove();
-            this.options.icon = false;
-            return;
-        }
-
-        this.container.queue(function() {
-            var span = $('.achtung-message-icon', self.container);
-
-            if (!self.options.animateClassSwitch ||
-                /webkit/.test(navigator.userAgent.toLowerCase()) ||
-                !$.isFunction($.fn.switchClass)) {
-                span.removeClass(self.options.icon);
-                span.addClass(newIcon);
+        if (!!this.icon) {
+            if (newIcon) {
+                this.icon.removeClass(this.options.icon).addClass(newIcon);
             } else {
-                span.switchClass(self.options.icon, newIcon, 500);
+                this.icon.remove();
+                this.icon = false;
             }
+        } else if (newIcon) {
+            this.icon = $('<span class="achtung-message-icon ui-icon ' + newIcon + '" />');
+            this.container.prepend(this.icon);
+        }
 
-            self.options.icon = newIcon;
-            self.container.dequeue();
-        });
+        this.options.icon = newIcon;
     },
 
+    changeMessage: function (newMessage) {
+        if (this.options.crossFadeMessage > 0) {
+            this.message.clone()
+                .css('position', 'absolute')
+                .insertBefore(this.message)
+                .fadeOut(this.options.crossFadeMessage, function () { $(this).remove(); });
 
-    changeMessage: function(newMessage)
-    {
-        this.container.queue(function() {
-            $('.achtung-message', $(this)).html(newMessage);
-            $(this).dequeue();
-        });
+            this.message.hide().html(newMessage).fadeIn(this.options.crossFadeMessage);
+        } else {
+            this.message.html(newMessage);
+        }
+
+        this.options.message = newMessage;
     },
 
+    update: function () {
+        var options = $.extend.apply($, [{}].concat(Array.prototype.slice.call(arguments, 0))),
+            map = {
+                className: 'changeClass',
+                css: 'css',
+                icon: 'changeIcon',
+                message: 'changeMessage',
+                timeout: 'timeout'
+            };
 
-    update: function()
-    {
-        var args = Array.prototype.slice.call(arguments, 0), options = {};
-
-        args.unshift({});
-
-        options = $.extend.apply($, args);
-
-        (options.className && this.changeClass(options.className));
-        (options.css && this.container.css(options.css));
-        (typeof(options.icon) !== 'undefined' && this.changeIcon(options.icon));
-        (options.message && this.changeMessage(options.message));
-
-        (typeof(options.timeout) !== 'undefined' && this.timeout(options.timeout));
+        for (var prop in map) {
+            if (prop in options) {
+                this[map[prop]](options[prop]);
+            }
+        }
     },
 
-    isVisible: function() {
+    isVisible: function () {
         return (true === this.container.is(':visible'));
     },
 
-    close: function()
-    {
-        var o = this.options, container = this.container;
+    close: function () {
+        var o = this.options, self = this;
 
         if (o.hideEffects) {
-            this.container.animate(o.hideEffects, o.hideEffectDuration);
+            this.container.animate(o.hideEffects, o.hideEffectDuration, function () {
+                self.remove();
+            });
         } else {
             this.container.hide();
+            this.remove();
         }
+    },
 
-        container.queue(function() {
-            container.removeData('achtung');
-            container.remove();
+    remove: function () {
+        this.container.remove();
 
-            if ($.achtung.wrapper && $.achtung.wrapper.is(':empty')) {
-                $.achtung.overlay.remove();
-                $.achtung.overlay = false;
-                $.achtung.wrapper = false;
-            }
-
-            container.dequeue();
-        });
+        if ($.achtung.wrapper && !($.achtung.wrapper.contents().length)) {
+            $.achtung.wrapper = false;
+            $.achtung.overlay.remove();
+            $.achtung.overlay = false;
+        }
     }
 });
-
-vox.achtung = {
-    WAIT: {
-        timeout: 0,
-        icon: 'wait-icon',
-        className: 'achtungWait',
-        disableClose: true
-    },
-    SUCCESS: {
-        timeout: 5,
-        icon: 'ui-icon-check',
-        className: 'achtungSuccess',
-        disableClose: false
-    },
-    FAIL: {
-        timeout: 10,
-        icon: 'ui-icon-alert',
-        className: 'achtungFail',
-        disableClose: false
-    }
-};
-
 
 })(jQuery);
