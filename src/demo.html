@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Achtung Test</title>
+    <link rel="stylesheet" href="demo.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="ui.achtung.css" type="text/css" media="screen" />
+    <script src="jquery.min.js" type="text/javascript"></script>
+    <script src="jquery-ui.min.js" type="text/javascript"></script>
+    <script src="ui.achtung.js" type="text/javascript"></script>
+</head>
+<body id="achtung-demos">
+    <h1>Achtung Demos</h1>
+    <div id="buttons">
+    </div>
+    <h1 style="margin-top: 10px;">HTML Ipsum Presents</h1>
+
+    <p><strong>Pellentesque habitant morbi tristique</strong> senectus et netus et malesuada fames ac turpis egestas. Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. Donec eu libero sit amet quam egestas semper. <em>Aenean ultricies mi vitae est.</em> Mauris placerat eleifend leo. Quisque sit amet est et sapien ullamcorper pharetra. Vestibulum erat wisi, condimentum sed, <code>commodo vitae</code>, ornare sit amet, wisi. Aenean fermentum, elit eget tincidunt condimentum, eros ipsum rutrum orci, sagittis tempus lacus enim ac dui. <a href="#">Donec non enim</a> in turpis pulvinar facilisis. Ut felis.</p>
+
+    <h2>Header Level 2</h2>
+
+    <ol>
+       <li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li>
+       <li>Aliquam tincidunt mauris eu risus.</li>
+    </ol>
+
+    <blockquote><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus magna. Cras in mi at felis aliquet congue. Ut a est eget ligula molestie gravida. Curabitur massa. Donec eleifend, libero at sagittis mollis, tellus est malesuada tellus, at luctus turpis elit sit amet quam. Vivamus pretium ornare est.</p></blockquote>
+
+    <h3>Header Level 3</h3>
+
+    <ul>
+       <li>Lorem ipsum dolor sit amet, consectetuer adipiscing elit.</li>
+       <li>Aliquam tincidunt mauris eu risus.</li>
+    </ul>
+
+    <pre><code>
+    #header h1 a {
+    	display: block;
+    	width: 300px;
+    	height: 80px;
+    }
+    </code></pre>
+<script type="text/javascript">
+
+var one, achtungCount = 1, updateClass = '',
+    exampleBaseSuccess = {
+        timeout: 5,
+        className: 'achtungSuccess',
+        icon: 'ui-icon-check'
+    },
+    container = $('#buttons');
+
+$(function () {
+    one = $.achtung({
+        timeout: 0,
+        className: 'achtungSuccess',
+        icon: 'ui-icon-check',
+        message: 'Test (sticky)! ' + achtungCount++
+    });
+});
+
+var buttons = [
+    { text: 'Create, store in var', click: function () {
+        one = $.achtung({
+            timeout: 0,
+            message: 'Test! ' + achtungCount++
+        });
+    } },
+    { text: 'Close stored in var', click: function () {
+        if (one) {
+            one.achtung('close');
+            one = false;
+        }
+    } },
+    { text: 'Update stored in var', click: function () {
+        var message, icon;
+
+        if (one) {
+            if (updateClass === 'achtungSuccess') {
+                updateClass = 'achtungFail';
+                message = 'This is a fail message (no icon)!';
+                icon = false;
+            } else {
+                updateClass = 'achtungSuccess';
+                message = 'This is a success message!';
+                icon = 'ui-icon-check';
+            }
+
+            one.achtung('update', {className: updateClass, message: message, icon: icon});
+        }
+    } },
+    { text: 'Update stored in var (message only)', click: function () {
+        if (one) {
+            one.achtung('update', {message: "Message changed! " + achtungCount++});
+        }
+    } },
+    { text: 'Change color directly w/ $.css()', click: function () {
+        one.css({
+            background: '#455099',
+            color: 'white'
+        });
+    } },
+    { text: 'Change Defaults', click: function () {
+        $.achtung.defaults.className =
+            $.achtung.defaults.className === 'achtungSuccess' ?
+                'achtungFail' : 'achtungSuccess';
+
+        $.achtung.defaults.icon =
+            $.achtung.defaults.icon === 'ui-icon-check' ?
+                'ui-icon-alert' : 'ui-icon-check';
+    } },
+    { text: 'Create New Timed (w/ extended defaults)', click: function () {
+        $.achtung(exampleBaseSuccess, {
+            message: 'New timed! ' + achtungCount++
+        });
+    } },
+    { text: 'Create New Sticky', click: function () {
+        $.achtung({
+            timeout: 0,
+            message: 'New sticky (w/ default CSS) ' + achtungCount++
+        });
+    } },
+    { text: 'Create New Timed w/ Wait Icon', click: function () {
+        $.achtung({
+            className: 'achtungWait',
+            icon: 'wait-icon',
+            timeout: 5,
+            disableClose: true,
+            message: 'New waiting message.. ' + achtungCount++
+        });
+    } },
+    { text: 'Create New Custom', click: function () {
+        $('<div id="myCustomAchtung">' +
+            '<img src="images/rip.jpg" alt="What a rip!" />' +
+            'Some stuff can go here a a a a a a a a too</div>')
+            .achtung({
+                className: 'achtungSuccess',
+                timeout: 0,
+                icon: false,
+                message: 'Custom! ' + achtungCount++
+            });
+    } },
+    { text: 'Create with no effects', click: function () {
+        $.achtung({
+            timeout: 5,
+            showEffects: false,
+            hideEffects: false,
+            message: 'New with no effects ' + achtungCount++
+        });
+    } },
+    { text: 'Close First', click: function () {
+        $('.achtung:first').achtung('close');
+    } },
+    { text: 'Close Last', click: function () {
+        $('.achtung:last').achtung('close');
+    } },
+    { text: 'Close All', click: function () {
+        $('.achtung').achtung('close');
+    } },
+];
+
+$.each(buttons, function (i, val) {
+    $('<button>', val).appendTo(container);
+});
+
+</script>
+</body>
+</html>
