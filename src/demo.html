@@ -42,63 +42,58 @@
     </code></pre>
 <script type="text/javascript">
 
-var one, achtungCount = 1, updateClass = '',
+$(function () {
+
+var achtungCount = 1,
+    updateClass = '',
+    container = $('#buttons'),
     exampleBaseSuccess = {
         timeout: 5,
         className: 'achtungSuccess',
         icon: 'ui-icon-check'
-    },
-    container = $('#buttons');
-
-$(function () {
-    one = $.achtung({
-        timeout: 0,
-        className: 'achtungSuccess',
-        icon: 'ui-icon-check',
-        message: 'Test (sticky)! ' + achtungCount++
-    });
-});
+    };
 
 var buttons = [
-    { text: 'Create, store in var', click: function () {
-        one = $.achtung({
+    { text: 'Create sticky notification', id: 'createStickyBtn', click: function () {
+        var msg, updateBtn, closeBtn;
+
+        msg = $.achtung({
             timeout: 0,
-            message: 'Test! ' + achtungCount++
-        });
-    } },
-    { text: 'Close stored in var', click: function () {
-        if (one) {
-            one.achtung('close');
-            one = false;
-        }
-    } },
-    { text: 'Update stored in var', click: function () {
-        var message, icon;
-
-        if (one) {
-            if (updateClass === 'achtungSuccess') {
-                updateClass = 'achtungFail';
-                message = 'This is a fail message (no icon)!';
-                icon = false;
-            } else {
-                updateClass = 'achtungSuccess';
-                message = 'This is a success message!';
-                icon = 'ui-icon-check';
+            message: 'This is a default-styled message #' + achtungCount
+        }).bind({
+            achtungclose: function () {
+                updateBtn.remove();
+                closeBtn.remove();
             }
-
-            one.achtung('update', {className: updateClass, message: message, icon: icon});
-        }
-    } },
-    { text: 'Update stored in var (message only)', click: function () {
-        if (one) {
-            one.achtung('update', {message: "Message changed! " + achtungCount++});
-        }
-    } },
-    { text: 'Change color directly w/ $.css()', click: function () {
-        one.css({
-            background: '#455099',
-            color: 'white'
         });
+
+        updateBtn = $('<button>', {
+            text: 'Update notification #' + achtungCount,
+            click: function () {
+                if (msg.is('.achtungSuccess')) {
+                    msg.achtung('update', {
+                        className: 'achtungFail',
+                        message: 'This is a failure-styled message (without an icon)',
+                        icon: false
+                    });
+                } else {
+                    msg.achtung('update', {
+                        className: 'achtungSuccess',
+                        message: 'This is a success-styled message (with an icon)',
+                        icon: 'ui-icon-check'
+                    });
+                }
+            }
+        });
+
+        closeBtn = $('<button>', {
+            text: 'Close notification #' + achtungCount,
+            click: function () { msg.achtung('close'); }
+        });
+
+        $(this).after(closeBtn).after(updateBtn);
+
+        achtungCount++;
     } },
     { text: 'Change Defaults', click: function () {
         $.achtung.defaults.className =
@@ -161,6 +156,10 @@ var buttons = [
 
 $.each(buttons, function (i, val) {
     $('<button>', val).appendTo(container);
+});
+
+$('#createStickyBtn').trigger('click');
+
 });
 
 </script>
