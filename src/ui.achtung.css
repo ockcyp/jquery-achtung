@@ -44,7 +44,7 @@
 
 /* IE6 includes padding in width */
 * html .achtung {
-    width: 280px;
+    width: 260px;
 }
 
 #achtung-wrapper {
@@ -61,7 +61,7 @@
     background: #000;
     background: rgba(0,0,0,.95);
     color: white;
-    width: 200px;
+    width: 230px;
     font-weight: normal;
     font-style: italic;
     font-size: 1.05em;
