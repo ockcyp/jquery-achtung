@@ -115,9 +115,7 @@ $.extend($.achtung.prototype, {
             $('<span class="achtung-close-button ui-icon ui-icon-close" />')
                 .prependTo(this.container)
                 .bind({
-                    click: function () { self.close(); },
-                    mouseenter: function () { $(this).addClass('achtung-close-button-hover'); },
-                    mouseleave: function () { $(this).removeClass('achtung-close-button-hvoer'); }
+                    click: function () { self.close(); }
                 });
         }
 

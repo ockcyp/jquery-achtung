@@ -105,7 +105,7 @@
     background-image: url('images/ui-icons_cccccc_256x240.png');
 }
 
-.achtung .ui-icon.achtung-close-button-hover {
+.achtung .ui-icon.achtung-close-button:hover {
     background-image: url('images/ui-icons_ffffff_256x240.png');
 }
 
@@ -150,8 +150,8 @@
     background-image: url('images/ui-icons_444444_256x240.png');
 }
 
-.achtungSuccess .ui-icon.achtung-close-button-hover,
-.achtungFail .ui-icon.achtung-close-button-hover {
+.achtungSuccess .ui-icon.achtung-close-button:hover,
+.achtungFail .ui-icon.achtung-close-button:hover {
     background-image: url('images/ui-icons_ffffff_256x240.png');
 }
 
