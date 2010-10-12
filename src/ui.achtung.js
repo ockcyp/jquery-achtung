@@ -249,8 +249,14 @@ $.extend($.achtung.prototype, {
         return (true === this.container.is(':visible'));
     },
 
+    _trigger: function (type, data) {
+        this.container.trigger(widgetName + type, data);
+    },
+
     close: function () {
         var o = this.options, self = this;
+
+        this._trigger('close');
 
         if (o.hideEffects) {
             this.container.animate(o.hideEffects, o.hideEffectDuration, function () {
