@@ -80,6 +80,12 @@
 
 .achtung-default {
     background: #000;
+    background: -moz-linear-gradient(top, rgba(150,150,150,.9), rgba(120,120,120,.9) 70%);
+    background: -webkit-gradient(linear, left top, left bottom,
+        from(rgba(150,150,150,.9)),
+        color-stop(70%, rgba(120,120,120,.9)),
+        to(rgba(120,120,120,.9))
+    ) no-repeat;
     color: white;
 }
 
@@ -96,7 +102,7 @@
     top: -8px;
     right: -8px;
     cursor: pointer;
-    background-image: url('images/ui-icons_e0e0e0_256x240.png');
+    background-image: url('images/ui-icons_cccccc_256x240.png');
 }
 
 .achtung .ui-icon.achtung-close-button-hover {
@@ -141,12 +147,12 @@
 
 .achtungSuccess .ui-icon.achtung-close-button,
 .achtungFail .ui-icon.achtung-close-button {
-    background-image: url('images/ui-icons_454545_256x240.png');
+    background-image: url('images/ui-icons_444444_256x240.png');
 }
 
 .achtungSuccess .ui-icon.achtung-close-button-hover,
 .achtungFail .ui-icon.achtung-close-button-hover {
-    background-image: url('images/ui-icons_888888_256x240.png');
+    background-image: url('images/ui-icons_ffffff_256x240.png');
 }
 
 .achtung .wait-icon {
